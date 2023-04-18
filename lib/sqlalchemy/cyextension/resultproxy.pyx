@@ -68,10 +68,15 @@ cdef class BaseRow:
         return self._data[index]
 
     cpdef _get_by_key_impl_mapping(self, key):
-        try:
-            rec = self._keymap[key]
-        except KeyError as ke:
-            rec = self._parent._key_fallback(key, ke)
+        return self._get_by_key_impl_mapping(key)
+
+    cdef _real_get_by_key_impl_mapping(self, key):
+        rec = self._keymap.get(key)
+        if rec is None:
+            try:
+                rec = self._keymap[key]
+            except KeyError as ke:
+                rec = self._parent._key_fallback(key, ke)
 
         mdindex = rec[MD_INDEX]
         if mdindex is None:
@@ -86,7 +91,7 @@ cdef class BaseRow:
 
     def __getattr__(self, name):
         try:
-            return self._get_by_key_impl_mapping(name)
+            return self._real_get_by_key_impl_mapping(name)
         except KeyError as e:
            raise AttributeError(e.args[0]) from e
 
