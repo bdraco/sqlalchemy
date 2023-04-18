@@ -38,7 +38,6 @@ from sqlalchemy.engine import cursor as _cursor
 from sqlalchemy.engine import default
 from sqlalchemy.engine import Row
 from sqlalchemy.engine.result import SimpleResultMetaData
-from sqlalchemy.engine.row import KEY_INTEGER_ONLY
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.sql import ColumnElement
 from sqlalchemy.sql import expression
@@ -201,7 +200,6 @@ class CursorResultTest(fixtures.TablesTest):
             rows[0].user_id
 
     def test_keys_no_rows(self, connection):
-
         for i in range(2):
             r = connection.execute(
                 text("update users set user_name='new' where user_id=10")
@@ -378,7 +376,6 @@ class CursorResultTest(fixtures.TablesTest):
                 operator.ge,
                 operator.le,
             ]:
-
                 try:
                     control = op(equal, compare)
                 except TypeError:
@@ -1069,9 +1066,9 @@ class CursorResultTest(fixtures.TablesTest):
 
         eq_(list(row._fields), ["case_insensitive", "CaseSensitive"])
 
-        in_("case_insensitive", row._keymap)
-        in_("CaseSensitive", row._keymap)
-        not_in("casesensitive", row._keymap)
+        in_("case_insensitive", row._parent._keymap)
+        in_("CaseSensitive", row._parent._keymap)
+        not_in("casesensitive", row._parent._keymap)
 
         eq_(row._mapping["case_insensitive"], 1)
         eq_(row._mapping["CaseSensitive"], 2)
@@ -1094,9 +1091,9 @@ class CursorResultTest(fixtures.TablesTest):
                 ["case_insensitive", "CaseSensitive", "screw_up_the_cols"],
             )
 
-            in_("case_insensitive", row._keymap)
-            in_("CaseSensitive", row._keymap)
-            not_in("casesensitive", row._keymap)
+            in_("case_insensitive", row._parent._keymap)
+            in_("CaseSensitive", row._parent._keymap)
+            not_in("casesensitive", row._parent._keymap)
 
             eq_(row._mapping["case_insensitive"], 1)
             eq_(row._mapping["CaseSensitive"], 2)
@@ -1709,11 +1706,16 @@ class CursorResultTest(fixtures.TablesTest):
             def __getitem__(self, i):
                 return list.__getitem__(self.internal_list, i)
 
+        class MockMeta:
+            def __init__(self):
+                self._keymap = {"key": (0, None, "key"), 0: (0, None, "key")}
+                self._keymap_by_str = {
+                    key: rec[0] for key, rec in self._keymap.items()
+                }
+
         proxy = Row(
-            object(),
+            MockMeta(),
             [None],
-            {"key": (0, None, "key"), 0: (0, None, "key")},
-            Row._default_key_style,
             MyList(["value"]),
         )
         eq_(list(proxy), ["value"])
@@ -1760,12 +1762,16 @@ class CursorResultTest(fixtures.TablesTest):
                 eq_(len(mock_rowcount.__get__.mock_calls), 2)
 
     def test_row_is_sequence(self):
+        class MockMeta:
+            def __init__(self):
+                self._keymap = {"key": (None, 0), 0: (None, 0)}
+                self._keymap_by_str = {
+                    key: rec[0] for key, rec in self._keymap.items()
+                }
 
         row = Row(
-            object(),
+            MockMeta(),
             [None],
-            {"key": (None, 0), 0: (None, 0)},
-            Row._default_key_style,
             ["value"],
         )
         is_true(isinstance(row, collections_abc.Sequence))
@@ -1775,8 +1781,6 @@ class CursorResultTest(fixtures.TablesTest):
         row = Row(
             metadata,
             [None, None, None, None],
-            metadata._keymap,
-            Row._default_key_style,
             ["kv", "cv", "iv", "f"],
         )
         is_true(isinstance(row, collections_abc.Sequence))
@@ -1794,8 +1798,6 @@ class CursorResultTest(fixtures.TablesTest):
         row = Row(
             metadata,
             [None, None, None],
-            metadata._keymap,
-            Row._default_key_style,
             ["kv", "cv", "iv"],
         )
         is_true(isinstance(row, collections_abc.Sequence))
@@ -1819,8 +1821,6 @@ class CursorResultTest(fixtures.TablesTest):
         row = Row(
             metadata,
             [None, None, None],
-            metadata._keymap,
-            KEY_INTEGER_ONLY,
             ["av", "bv", "cv"],
         )
 
@@ -1841,12 +1841,16 @@ class CursorResultTest(fixtures.TablesTest):
         eq_(list(row._mapping), ["a", "b", "count"])
 
     def test_row_is_hashable(self):
+        class MockMeta:
+            def __init__(self):
+                self._keymap = {"key": (None, 0), 0: (None, 0)}
+                self._keymap_by_str = {
+                    key: rec[0] for key, rec in self._keymap.items()
+                }
 
         row = Row(
-            object(),
+            MockMeta(),
             [None, None, None],
-            {"key": (None, 0), 0: (None, 0)},
-            Row._default_key_style,
             (1, "value", "foo"),
         )
         eq_(hash(row), hash((1, "value", "foo")))
@@ -3450,7 +3454,6 @@ class AlternateCursorResultTest(fixtures.TablesTest):
                 r = conn.execute(select(self.table))
                 assert isinstance(r.cursor_strategy, strategy_cls)
                 with mock.patch.object(r, "cursor", cursor()):
-
                     with testing.expect_raises_message(
                         IOError, "random non-DBAPI"
                     ):
@@ -3514,7 +3517,6 @@ class MergeCursorResultTest(fixtures.TablesTest):
         users = self.tables.users
 
         def results(connection):
-
             r1 = connection.execute(
                 users.select()
                 .where(users.c.user_id.in_([7, 8]))

@@ -876,16 +876,12 @@ class BaseRow(Case):
         self.row_args = (
             self.parent,
             self.parent._processors,
-            self.parent._keymap,
-            0,
             (1, 2, 3),
         )
         self.parent_long = SimpleResultMetaData(tuple(ascii_letters))
         self.row_long_args = (
             self.parent_long,
             self.parent_long._processors,
-            self.parent_long._keymap,
-            0,
             tuple(range(len(ascii_letters))),
         )
         self.row = self.impl(*self.row_args)
@@ -995,6 +991,82 @@ class BaseRow(Case):
         self.row.b
         self.row_long.x
         self.row_long.y
+
+    @test_case
+    def getattr_repeats(self):
+        row = self.row
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
+        row.a
 
 
 class CacheAnonMap(Case):

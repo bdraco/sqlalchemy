@@ -99,6 +99,7 @@ class ResultMetaData:
     _keymap: _KeyMapType
     _keys: Sequence[str]
     _processors: Optional[_ProcessorsType]
+    _keymap_by_str: Dict[_KeyType, _KeyMapRecType]
 
     @property
     def keys(self) -> RMKeyView:
@@ -222,6 +223,7 @@ class SimpleResultMetaData(ResultMetaData):
         "_tuplefilter",
         "_translated_indexes",
         "_unique_filters",
+        "_keymap_by_str",
     )
 
     _keys: Sequence[str]
@@ -256,6 +258,10 @@ class SimpleResultMetaData(ResultMetaData):
         self._keymap = {key: rec for keys, rec in recs_names for key in keys}
 
         self._processors = _processors
+
+        self._keymap_by_str = {
+            key: rec[0] for key, rec in self._keymap.items()
+        }
 
     def _has_key(self, key: object) -> bool:
         return key in self._keymap
@@ -358,9 +364,7 @@ def result_tuple(
     fields: Sequence[str], extra: Optional[Any] = None
 ) -> Callable[[Iterable[Any]], Row[Any]]:
     parent = SimpleResultMetaData(fields, extra)
-    return functools.partial(
-        Row, parent, parent._processors, parent._keymap, Row._default_key_style
-    )
+    return functools.partial(Row, parent, parent._processors)
 
 
 # a symbol that indicates to internal Result methods that
@@ -424,21 +428,15 @@ class ResultInternal(InPlaceGenerative, Generic[_R]):
                 def process_row(  # type: ignore
                     metadata: ResultMetaData,
                     processors: _ProcessorsType,
-                    keymap: _KeyMapType,
-                    key_style: Any,
                     scalar_obj: Any,
                 ) -> Row[Any]:
-                    return _proc(
-                        metadata, processors, keymap, key_style, (scalar_obj,)
-                    )
+                    return _proc(metadata, processors, (scalar_obj,))
 
         else:
             process_row = Row  # type: ignore
 
-        key_style = Row._default_key_style
         metadata = self._metadata
 
-        keymap = metadata._keymap
         processors = metadata._processors
         tf = metadata._tuplefilter
 
@@ -447,7 +445,7 @@ class ResultInternal(InPlaceGenerative, Generic[_R]):
                 processors = tf(processors)
 
             _make_row_orig: Callable[..., _R] = functools.partial(  # type: ignore  # noqa E501
-                process_row, metadata, processors, keymap, key_style
+                process_row, metadata, processors
             )
 
             fixed_tf = tf
@@ -457,7 +455,7 @@ class ResultInternal(InPlaceGenerative, Generic[_R]):
 
         else:
             make_row = functools.partial(  # type: ignore
-                process_row, metadata, processors, keymap, key_style
+                process_row, metadata, processors
             )
 
         fns: Tuple[Any, ...] = ()
