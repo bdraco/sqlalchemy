@@ -339,6 +339,11 @@ class Processor(Case):
         self.impl.str_to_date("2020-01-01")
 
     @test_case
+    def to_pybytes(self):
+        self.impl.to_pybytes(None)
+        self.impl.to_pybytes(b"any")
+
+    @test_case
     def to_decimal(self):
         self.to_dec(None) is None
         self.to_dec(123.44)
