@@ -94,6 +94,8 @@ def to_decimal_processor_factory(
 def to_pybytes(value: Optional[Any]) -> Optional[bytes]:
     if value is None:
         return None
+    elif type(value) is bytes:
+        return value
     else:
         return bytes(value)
 
