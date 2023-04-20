@@ -14,6 +14,9 @@ def int_to_boolean(value):
         return None
     return True if value else False
 
+def to_pybytes(value):
+    return bytes(value) if value is not None else None
+
 def to_str(value):
     return PyObject_Str(value) if value is not None else None
 

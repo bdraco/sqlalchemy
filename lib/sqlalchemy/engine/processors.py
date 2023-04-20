@@ -29,6 +29,7 @@ if typing.TYPE_CHECKING or not HAS_CYEXTENSION:
     )
     from ._py_processors import to_float as to_float
     from ._py_processors import to_str as to_str
+    from ._py_processors import to_pybytes as to_pybytes
 else:
     from sqlalchemy.cyextension.processors import (
         DecimalResultProcessor,
@@ -50,6 +51,9 @@ else:
     )
     from sqlalchemy.cyextension.processors import (  # noqa: F401,E501
         to_str as to_str,
+    )
+    from sqlalchemy.cyextension.processors import (  # noqa: F401,E501
+        to_pybytes as to_pybytes,
     )
 
     def to_decimal_processor_factory(target_class, scale):
