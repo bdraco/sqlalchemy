@@ -91,13 +91,6 @@ def to_decimal_processor_factory(
     return process
 
 
-def to_pybytes(value: Optional[Any]) -> Optional[bytes]:
-    if value is None:
-        return None
-    else:
-        return bytes(value)
-
-
 def to_float(value: Optional[Union[int, float]]) -> Optional[float]:
     if value is None:
         return None
