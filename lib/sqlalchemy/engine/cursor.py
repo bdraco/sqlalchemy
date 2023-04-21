@@ -1454,6 +1454,8 @@ class CursorResult(Result[_T]):
             metadata = self._init_metadata(context, cursor_description)
 
             processors = metadata._processors
+            if processors and all(p is None for p in processors):
+                processors = None
             process_row = Row
             _make_row = functools.partial(process_row, metadata, processors)
             if log_row:

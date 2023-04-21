@@ -463,6 +463,8 @@ class ResultInternal(InPlaceGenerative, Generic[_R]):
         metadata = self._metadata
 
         processors = metadata._processors
+        if processors and all(p is None for p in processors):
+            processors = None
         tf = metadata._tuplefilter
 
         if tf and not real_result._source_supports_scalars:
