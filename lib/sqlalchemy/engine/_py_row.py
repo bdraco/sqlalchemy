@@ -52,10 +52,8 @@ class BaseRow:
                     ]
                 ),
             )
-        elif type(data) is tuple:
-            object.__setattr__(self, "_data", data)
         else:
-            object.__setattr__(self, "_data", tuple(data))
+            object.__setattr__(self, "_data", data)
 
     def __reduce__(self) -> Tuple[Callable[..., BaseRow], Tuple[Any, ...]]:
         return (
