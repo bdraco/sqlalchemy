@@ -14,8 +14,10 @@ cdef class BaseRow:
 
         if processors:
             self._data = _apply_processors(processors, data)
-        else:
+        elif type(data) is tuple:
             self._data = data
+        else:
+            self._data = tuple(data)
 
     def __reduce__(self):
         return (
