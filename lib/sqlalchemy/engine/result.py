@@ -90,6 +90,9 @@ _UniqueFilterType = Callable[[Any], Any]
 _UniqueFilterStateType = Tuple[Set[Any], Optional[_UniqueFilterType]]
 
 
+import logging
+_LOGGER  = logging.getLogger(__name__)
+
 class ResultMetaData:
     """Base for metadata about result rows."""
 
@@ -477,6 +480,7 @@ class ResultInternal(InPlaceGenerative, Generic[_R]):
 
         key_to_index = metadata._key_to_index
         processors = metadata._effective_processors
+        
         tf = metadata._tuplefilter
 
         if tf and not real_result._source_supports_scalars:
@@ -503,6 +507,8 @@ class ResultInternal(InPlaceGenerative, Generic[_R]):
 
             def make_row(row: _InterimRowType[Row[Any]]) -> _R:
                 return _log_row(_make_row(row))  # type: ignore
+
+        _LOGGER.warning("make_row: processors=%s make_row=%s", processors, make_row)
 
         return make_row
 
