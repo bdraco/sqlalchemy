@@ -1626,9 +1626,7 @@ class SQLCompiler(Compiled):
                 positions.append(m.group(2))
                 return m.group(0)
 
-        self.string = re.sub(
-            self._positional_pattern, find_position, self.string
-        )
+        self.string = self._positional_pattern.sub(find_position, self.string)
 
         if self.escaped_bind_names:
             reverse_escape = {v: k for k, v in self.escaped_bind_names.items()}
@@ -1642,8 +1640,7 @@ class SQLCompiler(Compiled):
         if self._insertmanyvalues:
             positions = []
 
-            single_values_expr = re.sub(
-                self._positional_pattern,
+            single_values_expr = self._positional_pattern.sub(
                 find_position,
                 self._insertmanyvalues.single_values_expr,
             )
@@ -1651,7 +1648,7 @@ class SQLCompiler(Compiled):
                 (
                     v[0],
                     v[1],
-                    re.sub(self._positional_pattern, find_position, v[2]),
+                    self._positional_pattern.sub(find_position, v[2]),
                     v[3],
                 )
                 for v in self._insertmanyvalues.insert_crud_params
@@ -2167,8 +2164,8 @@ class SQLCompiler(Compiled):
                 )
             return expr
 
-        statement = re.sub(
-            self._post_compile_pattern, process_expanding, pre_expanded_string
+        statement = self._post_compile_pattern.sub(
+            process_expanding, pre_expanded_string
         )
 
         if numeric_positiontup is not None:
